@@ -9,8 +9,6 @@ def main():
     if 'runserver' in sys.argv:
         uvicorn.run(
             'server:app',
-            host=SERVER_HOST,
-            port=SERVER_PORT,
             ssl_certfile=WEBHOOK_SSL_CERT,
             ssl_keyfile=WEBHOOK_SSL_PRIV,
             log_level='info'
