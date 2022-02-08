@@ -78,6 +78,7 @@ def callback_processing(call):
     ans = 'Заказ принят' if call.data == 'cb_yes' else 'Заказ отклонен'
     bot.answer_callback_query(call.id, ans)
     ans = f"\n<b>{ans}</b>"
+    print(call.order_number)
     # send_email(customer='some_email')
     # вызовем функцию САНИ
     # вызовем функцию отправки EMAIL

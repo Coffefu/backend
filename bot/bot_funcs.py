@@ -19,7 +19,7 @@ def send_order(order: dict):
 
 markup_btns = types.InlineKeyboardMarkup(row_width=2)
 markup_btns.add(
-    types.InlineKeyboardButton('Принять', callback_data='cb_yes'),
-    types.InlineKeyboardButton('Отклонить', callback_data='cb_no')
+    types.InlineKeyboardButton('Принять', callback_data='cb_yes', order_number=32),
+    types.InlineKeyboardButton('Отклонить', callback_data='cb_no', order_number=32)
 )
 
