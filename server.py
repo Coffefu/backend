@@ -19,11 +19,6 @@ async def on_startup():
                     certificate=open(WEBHOOK_SSL_CERT, 'r'))
 
 
-@app.on_event("shutdown")
-async def on_shutdown():
-    await bot.session.close()
-
-
 @app.get('/products')
 async def get_products():
     return [p.data(hide=['description']) for p in Product.select()]
