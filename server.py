@@ -8,6 +8,7 @@ from backend import schemas
 from backend.settings import API_TOKEN, SERVER_PORT, WEBHOOK_SSL_CERT, DOMAIN
 from bot import bot
 from bot.bot_funcs import send_order
+from bot.email_sender import send_email
 
 app = FastAPI(redoc_url=None, docs_url=None)
 
@@ -64,3 +65,22 @@ def process_webhook(update: dict):
         bot.process_new_updates([update])
     else:
         return
+
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    print(message.chat.id)
+    bot.reply_to(message, f"Hello, i'm coffefu webhook bot. Chat {message.chat.id}")
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_processing(call):
+    ans = 'Заказ принят' if call.data == 'cb_yes' else 'Заказ отклонен'
+    bot.answer_callback_query(call.id, ans)
+    ans = f"\n<b>{ans}</b>"
+    # send_email(customer='some_email')
+    # вызовем функцию САНИ
+    # вызовем функцию отправки EMAIL
+
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text=call.message.text + ans, reply_markup=None)
