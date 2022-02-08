@@ -5,7 +5,7 @@ import logging
 
 from app.models import *
 from backend import schemas
-from backend.settings import API_TOKEN, SERVER_PORT, WEBHOOK_SSL_CERT, DOMAIN
+from backend.settings import API_TOKEN, WEBHOOK_SSL_CERT, DOMAIN
 from bot import bot
 from bot.bot_funcs import send_order
 from bot.email_sender import send_email
@@ -16,7 +16,7 @@ app = FastAPI(redoc_url=None, docs_url=None)
 @app.on_event("startup")
 async def on_startup():
     bot.remove_webhook()
-    bot.set_webhook(url=f"https://{DOMAIN}:{SERVER_PORT}" + f'/{API_TOKEN}/',
+    bot.set_webhook(url=f"https://{DOMAIN}" + f'/{API_TOKEN}/',
                     certificate=open(WEBHOOK_SSL_CERT, 'r'))
 
 
@@ -78,7 +78,7 @@ def callback_processing(call):
     ans = 'Заказ принят' if call.data == 'cb_yes' else 'Заказ отклонен'
     bot.answer_callback_query(call.id, ans)
     ans = f"\n<b>{ans}</b>"
-    print(call.order_number)
+    # print(call.order_number)
     # send_email(customer='some_email')
     # вызовем функцию САНИ
     # вызовем функцию отправки EMAIL
