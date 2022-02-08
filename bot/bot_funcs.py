@@ -1,8 +1,10 @@
 import telebot
 from telebot import types
 
+from bot import bot
 
-def send_order(order: dict, bot: telebot.TeleBot):
+
+def send_order(order: dict):
     message = f'<b>Заказ №{order["order_number"]}</b>\n'
     message += f'<i>Содержание:</i> {order["product_name"]}\n'
     message += f'<i>Приготовить к:</i> {order["time"].strftime("%H:%M")}\n'

@@ -6,18 +6,22 @@ import logging
 from app.models import *
 from backend import schemas
 from backend.settings import API_TOKEN, SERVER_PORT, WEBHOOK_SSL_CERT, DOMAIN
-from bot_funcs import send_order
+from bot import bot
+from bot.bot_funcs import send_order
 
 app = FastAPI(redoc_url=None, docs_url=None)
 
-logger = telebot.logger
-telebot.logger.setLevel(logging.INFO)
-bot = telebot.TeleBot(API_TOKEN)
+
+@app.on_event("startup")
+async def on_startup():
+    bot.remove_webhook()
+    bot.set_webhook(url=f"https://{DOMAIN}:{SERVER_PORT}" + f'/{API_TOKEN}/',
+                    certificate=open(WEBHOOK_SSL_CERT, 'r'))
 
 
-bot.remove_webhook()
-bot.set_webhook(url=f"https://{DOMAIN}:{SERVER_PORT}" + f'/{API_TOKEN}/',
-                certificate=open(WEBHOOK_SSL_CERT, 'r'))
+@app.on_event("shutdown")
+async def on_shutdown():
+    await bot.session.close()
 
 
 @app.get('/products')
@@ -48,14 +52,13 @@ async def make_order(order: schemas.Order):
         return HTTPException(400, 'Incorrect product')
 
     order = Order.create(coffee_house=coffee_house, customer=customer, product=product, time=order.time)
-    response = {'order_number': order.id,
+    send_order({'order_number': order.id,
                 'product_name': product.name,
                 'time': order.time,
                 'customer_name': customer.name,
                 'phone_number': customer.phone_number,
                 'email': customer.email,
-                'coffee_house_chat_id': coffee_house.chat_id, }
-    send_order(order=response, bot=bot)
+                'coffee_house_chat_id': coffee_house.chat_id, })
     return 'Success'
 
 
