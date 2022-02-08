@@ -2,7 +2,7 @@
 import sys
 import uvicorn
 
-from backend.settings import SERVER_HOST, SERVER_PORT
+from backend.settings import SERVER_HOST, SERVER_PORT, WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV
 
 
 def main():
@@ -11,6 +11,8 @@ def main():
             'server:app',
             host=SERVER_HOST,
             port=SERVER_PORT,
+            ssl_certfile=WEBHOOK_SSL_CERT,
+            ssl_keyfile=WEBHOOK_SSL_PRIV,
             log_level='info'
         )
 
