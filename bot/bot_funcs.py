@@ -14,12 +14,11 @@ def send_order(order: dict):
     if 'email' in order:
         message += f'<i>Почта покупателя:</i> {order["email"]}\n'
 
+    markup_btns.add(
+        types.InlineKeyboardButton('Принять', callback_data=f'yes {order["order_number"]}'),
+        types.InlineKeyboardButton('Отклонить', callback_data=f'no {order["order_number"]}')
+    )
     bot.send_message(chat_id=order["coffee_house_chat_id"], text=message, parse_mode='HTML', reply_markup=markup_btns)
 
 
 markup_btns = types.InlineKeyboardMarkup(row_width=2)
-markup_btns.add(
-    types.InlineKeyboardButton('Принять', callback_data='cb_yes', order_number=32),
-    types.InlineKeyboardButton('Отклонить', callback_data='cb_no', order_number=32)
-)
-

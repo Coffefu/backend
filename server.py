@@ -75,11 +75,14 @@ def send_welcome(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_processing(call):
-    ans = 'Заказ принят' if call.data == 'cb_yes' else 'Заказ отклонен'
+    cb_ans, order_number = call.data.split()
+    ans = 'Заказ принят' if cb_ans == 'yes' else 'Заказ отклонен'
     bot.answer_callback_query(call.id, ans)
     ans = f"\n<b>{ans}</b>"
-    # print(call.order_number)
-    # send_email(customer='some_email')
+
+    customer_email = Order.get_or_none(id=int(order_number)).customer.email
+    status = cb_ans == 'yes'
+    send_email(customer_email, int(order_number), status)
     # вызовем функцию САНИ
     # вызовем функцию отправки EMAIL
 
