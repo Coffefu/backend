@@ -14,8 +14,8 @@ sender_name = 'Приложение Coffefu'
 
 def send_email(customer: str, order_number: int, status: bool):
     msg_theme = 'Заказ принят' if status else 'Заказ отклонен'
-    msg_text = f'Ваш заказ №{order_number} принят в работу.'
-    msg_text += 'принят в работу.' if status else 'отклонен.'
+    msg_text = f'Ваш заказ №{order_number} '
+    msg_text += 'принят в работу.☺' if status else 'отклонен.😧'
     msg_text += '\n\nХорошего дня.'
     recipient = [customer]
 
