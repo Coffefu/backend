@@ -25,8 +25,7 @@ def send_email(customer: str, order_number: int, status: bool):
     msg['From'] = formataddr((sender_name, sender))
     msg['To'] = ', '.join(recipient)
 
-    server = smtplib.SMTP(EMAIL_SERVER)
-    server.starttls()
+    server = smtplib.SMTP_SSL(EMAIL_SERVER, 465)
     server.login(sender, sender_password)
     server.send_message(msg)
 
