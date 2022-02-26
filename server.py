@@ -15,9 +15,10 @@ app = FastAPI(redoc_url=None, docs_url=None)
 
 @app.on_event("startup")
 async def on_startup():
-    bot.remove_webhook()
-    bot.set_webhook(url=f"https://{DOMAIN}:{SERVER_PORT}" + f'/{API_TOKEN}/',
-                    certificate=open(WEBHOOK_SSL_CERT, 'r'))
+    pass
+    # bot.remove_webhook()
+    # bot.set_webhook(url=f"https://{DOMAIN}:{SERVER_PORT}" + f'/{API_TOKEN}/',
+    #                 certificate=open(WEBHOOK_SSL_CERT, 'r'))
 
 
 @app.get('/products')
@@ -38,16 +39,23 @@ async def get_favicon_svg():
 
 @app.post('/make_order')
 async def make_order(order: schemas.Order):
-    customer: Customer = Customer.get_or_create(**dict(order.customer))[0]
-    coffee_house: CoffeeHouse = CoffeeHouse.get_or_none(CoffeeHouse.name == order.coffee_house)
-    product: Product = Product.get_or_none(Product.id == order.product)
+    print(order)
 
-    if coffee_house is None:
-        return HTTPException(400, 'Incorrect coffee house')
-    if product is None:
-        return HTTPException(400, 'Incorrect product')
+    # coffee_house: CoffeeHouse = CoffeeHouse.get_or_none(CoffeeHouse.name == order.coffee_house)
+    # if coffee_house is None:
+    #     return HTTPException(400, 'Incorrect coffee house')
+    #
+    # customer: Customer = Customer.get_or_create(**dict(order.customer))[0]
+    # for prod in order.products:
+    #     product: Product = Product.get_or_none(Product.id == prod)
+    #     if product is None:
+    #         return HTTPException(400, 'Incorrect product')
 
-    order = Order.create(coffee_house=coffee_house, customer=customer, product=product, time=order.time)
+
+
+
+
+    order = Order.create(coffee_house=coffee_house, customer=customer, time=order.time)
     send_order({'order_number': order.id,
                 'product_name': product.name,
                 'time': order.time,
