@@ -1,7 +1,10 @@
+from datetime import datetime
+from typing import List
+
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 import telebot
-import logging
+from pytz import timezone
 
 from app.models import *
 from backend import schemas
@@ -15,10 +18,9 @@ app = FastAPI(redoc_url=None, docs_url=None)
 
 @app.on_event("startup")
 async def on_startup():
-    pass
-    # bot.remove_webhook()
-    # bot.set_webhook(url=f"https://{DOMAIN}:{SERVER_PORT}" + f'/{API_TOKEN}/',
-    #                 certificate=open(WEBHOOK_SSL_CERT, 'r'))
+    bot.remove_webhook()
+    bot.set_webhook(url=f"https://{DOMAIN}:{SERVER_PORT}" + f'/{API_TOKEN}/',
+                    certificate=open(WEBHOOK_SSL_CERT, 'r'))
 
 
 @app.get('/products')
@@ -37,32 +39,61 @@ async def get_favicon_svg():
     return FileResponse('assets/beans.ico')
 
 
+def validate_toppings(toppings: List[int]) -> bool:
+    for top in toppings:
+        if Topping.get_or_none(Topping.id == top) is None:
+            return False
+    return True
+
+
+def validate_products(products: List[schemas.Product]) -> bool:
+    for prod in products:
+        p = ProductVarious.get_or_none(ProductVarious.id == prod.id)
+        if p is None or not validate_toppings(prod.toppings):
+            return False
+    return True
+
+
+def validate_coffeehouse(coffee_house: str) -> bool:
+    if CoffeeHouse.get_or_none(coffee_house) is None:
+        return False
+    return True
+
+
+def validate_worktime(time: datetime, coffee_house: str) -> bool:
+    weekday = datetime.now(tz=timezone('Asia/Vladivostok')).weekday()
+    for timetbl in TimeTable.select().where(TimeTable.coffee_house == coffee_house):
+        if timetbl.worktime.day_of_week == weekday:
+            open_time = datetime.strptime(timetbl.worktime.open_time, '%H:%M:%S').time()
+            close_time = datetime.strptime(timetbl.worktime.close_time, '%H:%M:%S').time()
+            if open_time <= time.time() <= close_time:
+                print('True')
+                return True
+            print('False')
+            return False
+    print('not found. False')
+    return False
+
+
 @app.post('/make_order')
-async def make_order(order: schemas.Order):
-    print(order)
+async def make_order(order_inf: schemas.Order):
+    if not validate_coffeehouse(order_inf.coffee_house):
+        return HTTPException(400, 'Incorrect coffee house')
+    if not validate_products(order_inf.products):
+        return HTTPException(400, 'Incorrect product id')
+    if not validate_worktime(order_inf.time, order_inf.coffee_house):
+        return HTTPException(400, 'Incorrect worktime')
 
-    # coffee_house: CoffeeHouse = CoffeeHouse.get_or_none(CoffeeHouse.name == order.coffee_house)
-    # if coffee_house is None:
-    #     return HTTPException(400, 'Incorrect coffee house')
-    #
-    # customer: Customer = Customer.get_or_create(**dict(order.customer))[0]
-    # for prod in order.products:
-    #     product: Product = Product.get_or_none(Product.id == prod)
-    #     if product is None:
-    #         return HTTPException(400, 'Incorrect product')
+    coffee_house: CoffeeHouse = CoffeeHouse.get(order_inf.coffee_house)
+    customer: Customer = Customer.get_or_create(**dict(order_inf.customer))[0]
+    order = Order.create(coffee_house=coffee_house, customer=customer, time=order_inf.time)
+    for p in order_inf.products:
+        prod: ProductVarious = ProductVarious.get(ProductVarious.id == p.id)
+        order_prod = OrderedProduct.create(order=order, product=prod)
+        for top in p.toppings:
+            ToppingToProduct.create(ordered_product=order_prod, topping=top)
 
-
-
-
-
-    order = Order.create(coffee_house=coffee_house, customer=customer, time=order.time)
-    send_order({'order_number': order.id,
-                'product_name': product.name,
-                'time': order.time,
-                'customer_name': customer.name,
-                'phone_number': customer.phone_number,
-                'email': customer.email,
-                'coffee_house_chat_id': coffee_house.chat_id, })
+    send_order(order_number=order.id)
     return 'Success'
 
 
