@@ -21,7 +21,7 @@ class Customer(BaseModel):
 class Product(BaseModel):
     name = CharField(max_length=20)
     description = CharField(max_length=200, null=True)
-    img = CharField(max_length=200)
+    img = CharField(max_length=200, null=True)
 
     def __str__(self):
         return f'name: {self.name}'
@@ -61,29 +61,29 @@ class Order(BaseModel):
 
 class OrderedProduct(BaseModel):
     order = ForeignKeyField(Order)
-    product = ForeignKeyField(Product)
+    product = ForeignKeyField(ProductVarious)
 
 
 DaysOfWeek = (
-    ('MON', 'Понедельник'),
-    ('TUE', 'Вторник'),
-    ('WED', 'Среда'),
-    ('THU', 'Четверг'),
-    ('FRI', 'Пятница'),
-    ('SAT', 'Суббота'),
-    ('SUN', 'Воскресенье'),
+    (0, 'Понедельник'),
+    (1, 'Вторник'),
+    (2, 'Среда'),
+    (3, 'Четверг'),
+    (4, 'Пятница'),
+    (5, 'Суббота'),
+    (6, 'Воскресенье'),
 )
 
 
 class Worktime(BaseModel):
-    day_of_week = CharField(max_length=3, choices=DaysOfWeek)
-    open_time = TimeField()
-    close_time = TimeField()
+    day_of_week = IntegerField(choices=DaysOfWeek)
+    open_time = TimeField(formats='%H:%M:%S')
+    close_time = TimeField(formats='%H:%M:%S')
 
 
 class TimeTable(BaseModel):
     worktime = ForeignKeyField(Worktime)
-    coffee_house = ForeignKeyField(CoffeeHouse)
+    coffee_house = ForeignKeyField(CoffeeHouse, backref='coffee_house')
 
 
 class Topping(BaseModel):

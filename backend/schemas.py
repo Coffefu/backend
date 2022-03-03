@@ -16,14 +16,10 @@ class Product(BaseModel):
     toppings: List[int]
 
 
-class Products(BaseModel):
-    product: Product
-
-
 class Order(BaseModel):
     coffee_house: str  # TEST maybe int
     customer: Customer
-    products: Products
+    products: List[Product]
     time: datetime
 
     # REDO Order time_validator
