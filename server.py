@@ -119,11 +119,12 @@ def callback_processing(call):
     bot.answer_callback_query(call.id, ans)
     ans = f"\n<b>{ans}</b>"
 
-    customer_email = Order.get_or_none(id=int(order_number)).customer.email
-    status = cb_ans == 'yes'
+    order = Order.get_or_none(id=int(order_number))
+    status = (cb_ans == 'yes')
+    order.status = status
+    customer_email = order.customer.email
+
     send_email(customer_email, int(order_number), status)
-    # вызовем функцию САНИ
-    # вызовем функцию отправки EMAIL
 
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                           text=call.message.text + ans, reply_markup=None)
